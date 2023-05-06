@@ -5,7 +5,7 @@ import struct
 import asyncio
 from random import randbytes
 from dataclasses import dataclass, field
-from typing import AsyncGenerator, Deque
+from typing import Deque
 
 PROBE_BASE_PORT = 33434
 PROBE_UDP_PAYLOAD_SIZE = 8
@@ -63,6 +63,10 @@ class InvalidProbeReplyException(Exception):
     pass
 
 
+class ReachedDestinationException(Exception):
+    pass
+
+
 @dataclass
 class ProbeRequest:
     ipv4: str
@@ -72,7 +76,11 @@ class ProbeRequest:
         return socket.inet_pton(socket.AF_INET, self.ipv4)
 
     ttl: int
-    port: int = PROBE_BASE_PORT
+
+    @property
+    def port(self) -> int:
+        return PROBE_BASE_PORT + self.ttl
+
     udp_payload: bytes = field(
         default_factory=lambda: randbytes(PROBE_UDP_PAYLOAD_SIZE)
     )
@@ -82,13 +90,12 @@ class ProbeRequest:
     def update_dispatch_ts(self):
         self.dispatch_ts = time.time()
 
-    @staticmethod
-    def matches(request: "ProbeRequest", reply: "ProbeReply") -> bool:
-        if reply.ref_udp_payload == request.udp_payload:
+    def matches(self, reply: "ProbeReply") -> bool:
+        if reply.ref_udp_payload == self.udp_payload:
             return True
         elif (
-            request.ipv4 == reply.ref_ipv4_header.dst_ip
-            and request.port == reply.ref_udp_header.dst_port
+            self.ipv4 == reply.ref_ipv4_header.dst_ip
+            and self.port == reply.ref_udp_header.dst_port
         ):
             return True
         return False
@@ -163,17 +170,18 @@ class ICMPReplyWatcher:
 
     async def await_probe_reply(self):
         probe_bytes = await async_recv(self.icmp_socket)
-        probe_reply = ProbeReply.from_bytes(probe_bytes)
-        self.reply_buffer.append(probe_reply)
-        print(f"Received {probe_reply}")
+        reply = ProbeReply.from_bytes(probe_bytes)
+        self.reply_buffer.append(reply)
+        # print(
+        #     f"Received ICMP-{reply.icmp_header.type}/{reply.icmp_header.code}@{reply.ref_udp_header.dst_port}"
+        # )
 
     async def icmp_fetching(self):
-        print("Beginning icmp fetching.")
         while True:
             await self.await_probe_reply()
 
 
-class ProbeDispatcher:
+class RequestDispatcher:
     udp_socket: socket.socket
 
     def __init__(self) -> None:
@@ -181,73 +189,143 @@ class ProbeDispatcher:
         udp_socket.setblocking(False)
         self.udp_socket = udp_socket
 
-    async def dispatch(self, probe: ProbeRequest):
-        self.udp_socket.setsockopt(socket.SOL_IP, socket.IP_TTL, probe.ttl)
-        probe.update_dispatch_ts()
-        await async_sendto(self.udp_socket, probe.udp_payload, (probe.ipv4, probe.port))
+    async def dispatch(self, request: ProbeRequest):
+        self.udp_socket.setsockopt(socket.SOL_IP, socket.IP_TTL, request.ttl)
+        request.update_dispatch_ts()
+        await async_sendto(
+            self.udp_socket, request.udp_payload, (request.ipv4, request.port)
+        )
 
 
+@dataclass
 class RouteHop:
     target_ipv4: str
     hop: int
+    found_all_hops: asyncio.Event
     estimated_rtt: float | None = None
+    last_known_rtt: float = float("inf")
+    n_successful_measurements: int = 0
+    n_failed_measurements: int = 0
 
-    dispatcher: ProbeDispatcher
-    reply_watcher: ICMPReplyWatcher
+    def update_stats(self, request: ProbeRequest, reply: ProbeReply):
+        rtt = reply.receive_ts - request.dispatch_ts
+        self.last_known_rtt = rtt
+        self.n_successful_measurements += 1
+        self.estimated_rtt = (
+            0.875 * self.estimated_rtt + 0.125 * rtt
+            if self.estimated_rtt is not None
+            else rtt
+        )
 
-    def __init__(
-        self,
-        target_ipv4: str,
-        hop: int,
-        dispatcher: ProbeDispatcher,
-        reply_watcher: ICMPReplyWatcher,
-    ) -> None:
-        self.target_ipv4 = target_ipv4
-        self.hop = hop
-        self.dispatcher = dispatcher
-        self.reply_watcher = reply_watcher
+    @property
+    def status(self) -> str:
+        if self.estimated_rtt is None:
+            return f"[Hop #{self.hop}] *"
+        return f"[Hop #{self.hop}] RTT: {self.estimated_rtt:.3f} ({self.last_known_rtt:.3f}), # Probes: {self.n_successful_measurements}/{self.n_failed_measurements}"
 
-    def poll_for_matching_reply(self, probe: ProbeRequest) -> ProbeReply | None:
+    def poll_for_matching_reply(
+        self, request: ProbeRequest, reply_watcher: ICMPReplyWatcher
+    ) -> ProbeReply | None:
         match = None
-        for reply in self.reply_watcher.reply_buffer:
-            if ProbeRequest.matches(probe, reply):
+        for reply in reply_watcher.reply_buffer:
+            if request.matches(reply):
                 match = reply
+                break
 
         # remove from buffer
         if match is not None:
-            self.reply_watcher.reply_buffer.remove(match)
+            reply_watcher.reply_buffer.remove(match)
 
         return match
 
-    async def measure(self):
-        probe = ProbeRequest(
-            ipv4=self.target_ipv4, ttl=self.hop, port=PROBE_BASE_PORT + self.hop
-        )
-        await self.dispatcher.dispatch(probe)
+    async def measure(
+        self,
+        dispatcher: RequestDispatcher,
+        reply_watcher: ICMPReplyWatcher,
+        timeout: int = 10,
+    ):
+        try:
+            async with asyncio.timeout(timeout):
+                request = ProbeRequest(ipv4=self.target_ipv4, ttl=self.hop)
+                await dispatcher.dispatch(request)
 
-        probe_reply = None
-        while probe_reply is None:
-            probe_reply = self.poll_for_matching_reply(probe)
-            await asyncio.sleep(0.25)
+                reply = None
+                while reply is None:
+                    reply = self.poll_for_matching_reply(request, reply_watcher)
+                    await asyncio.sleep(0.25)
 
-        rtt = probe_reply.receive_ts - probe.dispatch_ts
-        print(f"[HOP{self.hop}, {rtt:.3f}ms]")
-        print(self.reply_watcher.reply_buffer)
-        self.estimated_rtt = rtt
+                self.update_stats(request, reply)
+
+                if not self.found_all_hops.is_set() and (
+                    reply.icmp_header.type == 3
+                    or reply.ipv4_header.source_ip == self.target_ipv4
+                ):
+                    self.found_all_hops.set()
+        except TimeoutError:
+            self.n_failed_measurements += 1
+
+
+@dataclass
+class Route:
+    target_ipv4: str
+
+    background_taskgroup: asyncio.TaskGroup
+    foreground_taskgroup: asyncio.TaskGroup
+    found_all_hops: asyncio.Event
+    stop_measurement: asyncio.Event
+
+    dispatcher: RequestDispatcher
+    reply_watcher: ICMPReplyWatcher
+    hops: list[RouteHop] = field(default_factory=lambda: [])
+
+    async def hop_probing_routine(self, hop: int):
+        assert not self.stop_measurement.is_set()
+        if self.found_all_hops.is_set():
+            print(f"No need for hop #{hop}")
+            return
+
+        route_hop = RouteHop(self.target_ipv4, hop, self.found_all_hops)
+        self.hops.append(route_hop)
+        while not self.stop_measurement.is_set():
+            await route_hop.measure(self.dispatcher, self.reply_watcher)
+
+    async def print_status(self):
+        while not self.stop_measurement.is_set():
+            print("_______________")
+            for hop in self.hops:
+                print(hop.status)
+            print(f"ROUTE: Buffer size {len(self.reply_watcher.reply_buffer)}")
+            print("_______________")
+            await asyncio.sleep(1)
+
+    async def analyze_route(self, max_hops: int = 32):
+        self.background_taskgroup.create_task(self.reply_watcher.icmp_fetching())
+        self.foreground_taskgroup.create_task(self.print_status())
+        for hop in range(1, max_hops + 1):
+            print(f"Beginning to probe hop #{hop}@{self.target_ipv4}")
+            self.foreground_taskgroup.create_task(self.hop_probing_routine(hop))
+            await asyncio.sleep(1)
+            if self.found_all_hops.is_set() or self.stop_measurement.is_set():
+                break
 
 
 async def async_main():
 
-    dispatcher = ProbeDispatcher()
+    dispatcher = RequestDispatcher()
     reply_watcher = ICMPReplyWatcher()
-    target_ipv4 = get_ipv4("kkos.net")
-    hops = [
-        RouteHop(target_ipv4, hop, dispatcher, reply_watcher) for hop in range(1, 20)
-    ]
+    target_ipv4 = get_ipv4("google.com")
     async with asyncio.TaskGroup() as bg_tasks:
-        bg_tasks.create_task(reply_watcher.icmp_fetching())
-        for hop in hops:
-            bg_tasks.create_task(hop.measure())
+        async with asyncio.TaskGroup() as fg_tasks:
+            route = Route(
+                target_ipv4,
+                bg_tasks,
+                fg_tasks,
+                asyncio.Event(),
+                asyncio.Event(),
+                dispatcher,
+                reply_watcher,
+            )
+            await route.analyze_route()
 
 
 if __name__ == "__main__":
