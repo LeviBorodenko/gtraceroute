@@ -1,13 +1,13 @@
-import enum
+from collections import deque
 import socket
 import time
 import struct
 import asyncio
 from random import randbytes
 from dataclasses import dataclass, field
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Deque
 
-PROBE_BASE_PORT = 12345
+PROBE_BASE_PORT = 33434
 PROBE_UDP_PAYLOAD_SIZE = 8
 
 
@@ -63,13 +63,6 @@ class InvalidProbeReplyException(Exception):
     pass
 
 
-class ProbeStatus(enum.Enum):
-    NOT_DISPATCHED = 0
-    DISPATCHED = 1
-    SUCCESSFUL = 2
-    FAILED = 3
-
-
 @dataclass
 class ProbeRequest:
     ipv4: str
@@ -83,26 +76,22 @@ class ProbeRequest:
     udp_payload: bytes = field(
         default_factory=lambda: randbytes(PROBE_UDP_PAYLOAD_SIZE)
     )
-    probe_request_creation_ts: float = field(default_factory=lambda: time.time())
-    status: ProbeStatus = ProbeStatus.NOT_DISPATCHED
-    probe_dispatch_ts: float | None = None
+    request_creation_ts: float = field(default_factory=lambda: time.time())
+    dispatch_ts: float = field(default_factory=lambda: time.time())
+
+    def update_dispatch_ts(self):
+        self.dispatch_ts = time.time()
 
     @staticmethod
-    def generate_ttl_sweep(host: str, max_ttl: int = 16) -> list["ProbeRequest"]:
-        sweep = []
-        for i in range(1, max_ttl + 1):
-            sweep.append(ProbeRequest(get_ipv4(host), i))
-        return sweep
-
-
-class RouteHop:
-    target_ipv4: str
-    hop: int
-    estimated_rtt: float | None = None
-
-    def __init__(self, target_ipv4: str, hop: int) -> None:
-        self.target_ipv4 = target_ipv4
-        self.hop = hop
+    def matches(request: "ProbeRequest", reply: "ProbeReply") -> bool:
+        if reply.ref_udp_payload == request.udp_payload:
+            return True
+        elif (
+            request.ipv4 == reply.ref_ipv4_header.dst_ip
+            and request.port == reply.ref_udp_header.dst_port
+        ):
+            return True
+        return False
 
 
 @dataclass
@@ -151,11 +140,10 @@ class ProbeReply:
 
 
 async def async_recv(sock: socket.socket) -> bytes:
-    data = await asyncio.get_event_loop().sock_recv(sock, 1024)
-    return data
+    return await asyncio.get_event_loop().sock_recv(sock, 1024)
 
 
-async def async_sendto(sock, udp_payload: bytes, addr: tuple[str, int]):
+async def async_sendto(sock: socket.socket, udp_payload: bytes, addr: tuple[str, int]):
     await asyncio.get_event_loop().sock_sendto(sock, udp_payload, addr)
 
 
@@ -163,18 +151,26 @@ class ICMPReplyWatcher:
     icmp_socket: socket.socket
     dispatched_probe_requests: list[ProbeRequest] = []
 
-    def __init__(self, timeout: int = 5) -> None:
+    reply_buffer: Deque[ProbeReply]
+
+    def __init__(self, buffer_size: int = 100) -> None:
+        self.reply_buffer = deque([], maxlen=buffer_size)
         icmp_socket = socket.socket(
             socket.AF_INET, socket.SOCK_RAW, socket.getprotobyname("icmp")
         )
         icmp_socket.setblocking(False)
-        icmp_socket.settimeout(timeout)
         self.icmp_socket = icmp_socket
 
-    async def probe_reply_stream(self) -> AsyncGenerator[ProbeReply, None]:
+    async def await_probe_reply(self):
+        probe_bytes = await async_recv(self.icmp_socket)
+        probe_reply = ProbeReply.from_bytes(probe_bytes)
+        self.reply_buffer.append(probe_reply)
+        print(f"Received {probe_reply}")
+
+    async def icmp_fetching(self):
+        print("Beginning icmp fetching.")
         while True:
-            packet_bytes = await async_recv(self.icmp_socket)
-            yield ProbeReply.from_bytes(packet_bytes)
+            await self.await_probe_reply()
 
 
 class ProbeDispatcher:
@@ -187,50 +183,72 @@ class ProbeDispatcher:
 
     async def dispatch(self, probe: ProbeRequest):
         self.udp_socket.setsockopt(socket.SOL_IP, socket.IP_TTL, probe.ttl)
+        probe.update_dispatch_ts()
         await async_sendto(self.udp_socket, probe.udp_payload, (probe.ipv4, probe.port))
+
+
+class RouteHop:
+    target_ipv4: str
+    hop: int
+    estimated_rtt: float | None = None
+
+    dispatcher: ProbeDispatcher
+    reply_watcher: ICMPReplyWatcher
+
+    def __init__(
+        self,
+        target_ipv4: str,
+        hop: int,
+        dispatcher: ProbeDispatcher,
+        reply_watcher: ICMPReplyWatcher,
+    ) -> None:
+        self.target_ipv4 = target_ipv4
+        self.hop = hop
+        self.dispatcher = dispatcher
+        self.reply_watcher = reply_watcher
+
+    def poll_for_matching_reply(self, probe: ProbeRequest) -> ProbeReply | None:
+        match = None
+        for reply in self.reply_watcher.reply_buffer:
+            if ProbeRequest.matches(probe, reply):
+                match = reply
+
+        # remove from buffer
+        if match is not None:
+            self.reply_watcher.reply_buffer.remove(match)
+
+        return match
+
+    async def measure(self):
+        probe = ProbeRequest(
+            ipv4=self.target_ipv4, ttl=self.hop, port=PROBE_BASE_PORT + self.hop
+        )
+        await self.dispatcher.dispatch(probe)
+
+        probe_reply = None
+        while probe_reply is None:
+            probe_reply = self.poll_for_matching_reply(probe)
+            await asyncio.sleep(0.25)
+
+        rtt = probe_reply.receive_ts - probe.dispatch_ts
+        print(f"[HOP{self.hop}, {rtt:.3f}ms]")
+        print(self.reply_watcher.reply_buffer)
+        self.estimated_rtt = rtt
 
 
 async def async_main():
 
-    probe_dispatcher = ProbeDispatcher()
-    reply_watcher = ICMPReplyWatcher(5)
-    sweep = ProbeRequest.generate_ttl_sweep("kkos.net")
-    for probe in sweep:
-        await probe_dispatcher.dispatch(probe)
-
-    async for reply in reply_watcher.probe_reply_stream():
-        print(reply)
-
-
-# def main():
-#     target_ipv4 = get_ipv4("google.com")
-#     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#
-#     ICMP_PROTO = socket.getprotobyname("icmp")
-#     icmp_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, ICMP_PROTO)
-#     icmp_socket.settimeout(5)
-#
-#     sweep = ProbeRequest.generate_ttl_sweep(target_ipv4, 12)
-#
-#     for probe in sweep:
-#         udp_socket.setsockopt(socket.SOL_IP, socket.IP_TTL, probe.ttl)
-#         time_bs = time.time()
-#         udp_socket.sendto(probe.udp_payload, (probe.ipv4, probe.port))
-#         probe.status = ProbeStatus.DISPATCHED
-#         probe.probe_dispatch_ts = time_bs
-#
-#     while True:
-#         try:
-#             data = icmp_socket.recv(1024)
-#             probe_reply = ProbeReply.from_bytes(data)
-#             print(probe_reply)
-#             print("_______________________")
-#         except socket.timeout:
-#             print("No ICMP packet arrived before timeout. Stopping sweep.")
-#             break
-#         except InvalidProbeReplyException as e:
-#             raise e
+    dispatcher = ProbeDispatcher()
+    reply_watcher = ICMPReplyWatcher()
+    target_ipv4 = get_ipv4("kkos.net")
+    hops = [
+        RouteHop(target_ipv4, hop, dispatcher, reply_watcher) for hop in range(1, 20)
+    ]
+    async with asyncio.TaskGroup() as bg_tasks:
+        bg_tasks.create_task(reply_watcher.icmp_fetching())
+        for hop in hops:
+            bg_tasks.create_task(hop.measure())
 
 
 if __name__ == "__main__":
-    asyncio.run(async_main())
+    asyncio.run(async_main(), debug=True)
