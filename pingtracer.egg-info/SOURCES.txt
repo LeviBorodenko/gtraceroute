@@ -15,3 +15,5 @@ pingtracer/core/application/services.py
 pingtracer/core/transport/__init__.py
 pingtracer/core/transport/entities.py
 pingtracer/core/transport/services.py
+pingtracer/tui/__init__.py
+pingtracer/tui/app.py
