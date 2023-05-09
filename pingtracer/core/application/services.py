@@ -1,8 +1,9 @@
 import asyncio
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from pingtracer.core.transport.entities import ProbeReply, ProbeRequest
 from pingtracer.core.transport.services import ICMPReplyWatcher, RequestDispatcher
+from pingtracer.core.utils import RTTMonitor
 
 
 @dataclass
@@ -10,33 +11,18 @@ class RouteHop:
     target_ipv4: str
 
     hop: int
-    found_all_hops: asyncio.Event
-    estimated_rtt: float | None = None
+    _found_all_hops: asyncio.Event
     last_known_rtt: float = float("inf")
     n_successful_measurements: int = 0
     n_failed_measurements: int = 0
 
     hop_ipv4: str | None = None
+    rtt: RTTMonitor = field(default_factory=lambda: RTTMonitor())
 
-    def update_stats(self, request: ProbeRequest, reply: ProbeReply):
+    def update_rtt_estimates(self, request: ProbeRequest, reply: ProbeReply):
         rtt = reply.receive_ts - request.dispatch_ts
+        self.rtt.observe(rtt)
         self.hop_ipv4 = reply.ipv4_header.source_ip
-        self.last_known_rtt = rtt
-        self.n_successful_measurements += 1
-        self.estimated_rtt = (
-            0.875 * self.estimated_rtt + 0.125 * rtt
-            if self.estimated_rtt is not None
-            else rtt
-        )
-
-    @property
-    def status(self) -> str:
-        if self.estimated_rtt is None or self.hop_ipv4 is None:
-            return f"[Hop #{self.hop}] *"
-        return (
-            f"[Hop #{self.hop}, {self.hop_ipv4}] RTT: {1000*self.estimated_rtt:.3f}ms ({1000*self.last_known_rtt:.3f}ms),"
-            f" #Probes: {self.n_successful_measurements}/{self.n_failed_measurements}"
-        )
 
     def poll_for_matching_reply(
         self, request: ProbeRequest, reply_watcher: ICMPReplyWatcher
@@ -69,12 +55,13 @@ class RouteHop:
                     reply = self.poll_for_matching_reply(request, reply_watcher)
                     await asyncio.sleep(0.25)
 
-                self.update_stats(request, reply)
+                self.update_rtt_estimates(request, reply)
 
-                if not self.found_all_hops.is_set() and (
+                if not self._found_all_hops.is_set() and (
                     reply.icmp_header.type == 3
                     or reply.ipv4_header.source_ip == self.target_ipv4
                 ):
-                    self.found_all_hops.set()
+                    self._found_all_hops.set()
         except TimeoutError:
             self.n_failed_measurements += 1
+        self.n_successful_measurements += 1
