@@ -16,6 +16,7 @@ classifiers = [
 ]
 dependencies = [
     'importlib-metadata; python_version<"3.8"',
+    'textual'
 ]
 dynamic = ["version"]
 
