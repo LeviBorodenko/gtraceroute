@@ -1,6 +1,5 @@
 import asyncio
-from asyncio.tasks import create_task
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pingtracer.core.application.services import RouteHop
 
 from pingtracer.core.transport.services import ICMPReplyWatcher, RequestDispatcher
@@ -25,22 +24,10 @@ class Tracer:
         while not self.stop_measurement.is_set():
             await route_hop.measure(self.dispatcher, self.reply_watcher)
 
-    async def print_status(self):
-        while not self.stop_measurement.is_set():
-            print("_______________")
-            for hop in self.hops:
-                print(hop.status)
-                if hop.hop_ipv4 == self.target_ipv4:
-                    break
-            print(f"ROUTE: Buffer size {len(self.reply_watcher.reply_buffer)}")
-            print("_______________")
-            await asyncio.sleep(1)
-
     async def analyze_route(self, max_hops: int = 32) -> asyncio.Event:
         self.taskgroup.create_task(
             self.reply_watcher.icmp_fetching(self.stop_measurement)
         )
-        self.taskgroup.create_task(self.print_status())
         for hop in range(1, max_hops + 1):
             if self.found_all_hops.is_set():
                 break
@@ -65,9 +52,9 @@ async def test_route_tracer():
             reply_watcher,
         )
         stop_measurement = await route.analyze_route()
-        print("********************************")
-        await asyncio.sleep(5)
         stop_measurement.set()
+        for hop in route.hops:
+            print(hop)
 
 
 def test_run():
