@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: pingtracer
+Version: 0.0.0
+Summary: TUI for tracing routes
+Author-email: Levi Borodenko <levi.borodenko@gmail.com>
+License: BSD-3-Clause
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.10
+Description-Content-Type: text/x-rst
