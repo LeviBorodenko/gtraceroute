@@ -1,2 +1,0 @@
-[console_scripts]
-test-trace = pingtracer.core.tracer:test_run
