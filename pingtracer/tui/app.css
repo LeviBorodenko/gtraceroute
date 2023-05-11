@@ -1,0 +1,8 @@
+Static #trace-result {
+  border: solid white;
+}
+
+
+Static .active {
+  border: solid blue;
+}
