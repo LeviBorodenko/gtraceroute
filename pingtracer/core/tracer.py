@@ -32,7 +32,9 @@ class Tracer:
         while not self.stop.is_set():
             await route_hop.measure(self.dispatcher, self.reply_watcher)
 
-    async def trace_route(self, target_ipv4: str, max_hops: int = 32) -> asyncio.Event:
+    async def trace_route(
+        self, target_ipv4: str, max_hops: int = 32, return_early: bool = False
+    ) -> asyncio.Event:
         asyncio.create_task(self.reply_watcher.icmp_fetching(self.stop))
         for hop in range(1, max_hops + 1):
             if self._found_all_hops.is_set():
@@ -41,33 +43,10 @@ class Tracer:
                 await_or_cancel_on_event(self.hop_probing(target_ipv4, hop), self.stop)
             )
             await asyncio.sleep(0.25)
-        return self.stop
 
-    @property
-    def trace_status_table(self):
-        columns = [
-            "Hop",
-            "IPv4",
-            "RTT (mean)",
-            "RTT (current)",
-            "RTT (std)",
-            "pings",
-            "loss (%)",
-        ]
-        rows = []
-        for hop in self.hops:
-            row = (
-                hop.hop,
-                hop.hop_ipv4,
-                hop.rtt.exp_avg,
-                hop.rtt.buffer[-1],
-                hop.rtt.exp_std,
-                hop.n_failed_measurements + hop.n_successful_measurements,
-                hop.n_failed_measurements
-                / (hop.n_failed_measurements + hop.n_successful_measurements),
-            )
-            rows.append(row)
-        return (columns, *rows)
+        if not return_early:
+            await self.stop.wait()
+        return self.stop
 
 
 async def test_route_tracer():

@@ -21,7 +21,7 @@ class RouteHop:
 
     def update_rtt_estimates(self, request: ProbeRequest, reply: ProbeReply):
         rtt = reply.receive_ts - request.dispatch_ts
-        self.rtt.observe(rtt)
+        self.rtt.observe(1000 * rtt)
         self.hop_ipv4 = reply.ipv4_header.source_ip
 
     def poll_for_matching_reply(
