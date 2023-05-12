@@ -1,8 +1,19 @@
-Static #trace-result {
-  border: solid white;
+Container {
+  layout: vertical;
+  border: round grey;
 }
 
-
-Static .active {
-  border: solid blue;
+Static#select-wrapper {
+  height: 1fr;
+  border: round grey;
+}
+TraceTable {
+  height: 3fr;
+  border: round green;
+  content-align: center middle;
+  
+}
+Static#plot-wrapper {
+  height: 3fr;        
+  border: round grey;
 }
