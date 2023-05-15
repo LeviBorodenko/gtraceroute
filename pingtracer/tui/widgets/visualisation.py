@@ -1,5 +1,5 @@
+from textual.containers import Container
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.message import Message
@@ -44,7 +44,11 @@ class TraceTable(Widget):
                 return idx
         raise IndexError(f"Cannot find hop #{hop_number} in {hops}!")
 
-    def watch_hops(self, updated_hops: list[RouteHop]):
+    def __init__(self, *args, **kwargs):
+        self.table = DataTable(*args, **kwargs)
+        super().__init__()
+
+    def watch_hops(self, old_hops: list[RouteHop], updated_hops: list[RouteHop]):
         updated_rows = TraceTable.get_rows_from_hops(updated_hops)
         cursor_row = self.table.cursor_row
         hover_coords = self.table.hover_coordinate
@@ -52,8 +56,13 @@ class TraceTable(Widget):
         for updated_row in updated_rows:
             self.table.add_row(*updated_row, key=updated_row[0])
         self.table.sort("hop")
-        self.table.move_cursor(row=cursor_row)
-        self.table.hover_coordinate = hover_coords
+        if (
+            len(old_hops) > 0
+            and len(updated_hops) > 0
+            and old_hops[0].target_ipv4 == updated_hops[0].target_ipv4
+        ):
+            self.table.move_cursor(row=cursor_row)
+            self.table.hover_coordinate = hover_coords
 
     class HopSelected(Message):
         hop: int
@@ -68,9 +77,12 @@ class TraceTable(Widget):
 
     def compose(self) -> ComposeResult:
         self.table = DataTable()
+        self.table.styles.width = "auto"
         self.table.cursor_type = "row"
-        with VerticalScroll():
+        with Container() as c:
             yield self.table
+            c.styles.align = ("center", "middle")
+            c.styles.height = "auto"
 
     def on_mount(self):
         self.table.add_column(self.COLUMNS[0], key="hop")

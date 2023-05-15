@@ -35,6 +35,10 @@ class Tracer:
     async def trace_route(
         self, target_ipv4: str, max_hops: int = 32, return_early: bool = False
     ) -> asyncio.Event:
+        self._hops = []
+        self.stop.clear()
+        self._found_all_hops.clear()
+
         asyncio.create_task(self.reply_watcher.icmp_fetching(self.stop))
         for hop in range(1, max_hops + 1):
             if self._found_all_hops.is_set():

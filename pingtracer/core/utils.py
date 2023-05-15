@@ -11,9 +11,6 @@ PROBE_UDP_PAYLOAD_SIZE = 8
 def get_ipv4(host: str) -> str:
     addr_info = socket.getaddrinfo(host, None, socket.AF_INET, proto=socket.SOCK_DGRAM)
     ipv4_info = [info[-1][0] for info in addr_info if info[0] == socket.AF_INET]
-
-    if len(ipv4_info) != 1:
-        raise NotImplementedError(f"Cannot extract ipv4 from {host}. Got {addr_info}")
     return ipv4_info[0]
 
 

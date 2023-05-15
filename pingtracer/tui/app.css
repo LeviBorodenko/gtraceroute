@@ -1,19 +1,20 @@
-Container {
+Container#trace-container {
   layout: vertical;
-  border: round grey;
+  border: solid yellow;
+  align-horizontal: center;
 }
 
-Static#select-wrapper {
-  height: 1fr;
-  border: round grey;
-}
 TraceTable {
-  height: 3fr;
-  border: round green;
-  content-align: center middle;
-  
+  height: auto;
+  padding: 1;
+  margin: 5;
+  border: solid grey;
+  min-height: 10vh;
 }
-Static#plot-wrapper {
-  height: 3fr;        
-  border: round grey;
+
+DomainNameInput {
+  height: auto;
+  margin: 5;
 }
+
+
