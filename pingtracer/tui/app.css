@@ -2,19 +2,22 @@ Container#trace-container {
   layout: vertical;
   border: solid yellow;
   align-horizontal: center;
+  height: auto;
+  width: 75vw;
 }
 
 TraceTable {
   height: auto;
   padding: 1;
-  margin: 5;
-  border: solid grey;
-  min-height: 10vh;
+  margin: 0 5 5 5;
+  /* min-height: 10vh; */
 }
 
 DomainNameInput {
-  height: auto;
-  margin: 5;
+  height: 10vh;
+  margin: 0 5 0 5;
+  layout: horizontal;
+  align-vertical: middle;
 }
 
 

@@ -3,8 +3,17 @@ from typing import ClassVar
 from textual import work
 from textual.app import ComposeResult
 from textual.message import Message
+from textual.reactive import reactive
 from textual.widget import Widget
-from textual.widgets import Input
+from textual.widgets import (
+    Input,
+    Label,
+    LoadingIndicator,
+    Markdown,
+    Placeholder,
+    Static,
+    Switch,
+)
 from pingtracer.core.utils import get_ipv4
 
 
@@ -12,6 +21,14 @@ class DomainNameInput(Widget):
     VALID_DOMAIN_NAME_RE: ClassVar[re.Pattern] = re.compile(
         r"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
     )
+
+    is_loading_dns = reactive(False)
+
+    def watch_is_loading_dns(self, new_val):
+        if new_val:
+            self.query_one(
+                "LoadingIndicator", LoadingIndicator
+            ).styles.display = "block"
 
     @staticmethod
     def is_domain_name(candidate: str) -> bool:
@@ -44,6 +61,6 @@ class DomainNameInput(Widget):
 
     def compose(self) -> ComposeResult:
         self.input = Input(
-            placeholder="Enter Target",
+            placeholder="Enter domain name that you want to trace",
         )
         yield self.input
