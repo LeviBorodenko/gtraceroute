@@ -9,10 +9,7 @@ from textual.widgets import (
     Input,
     Label,
     LoadingIndicator,
-    Markdown,
-    Placeholder,
     Static,
-    Switch,
 )
 from pingtracer.core.utils import get_ipv4
 
@@ -61,6 +58,7 @@ class DomainNameInput(Widget):
 
     def compose(self) -> ComposeResult:
         self.input = Input(
-            placeholder="Enter domain name that you want to trace",
+            placeholder="Enter target domain name here",
         )
+        yield Label("PingTracer Target")
         yield self.input

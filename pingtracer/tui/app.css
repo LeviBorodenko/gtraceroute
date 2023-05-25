@@ -1,23 +1,41 @@
-Container#trace-container {
-  layout: vertical;
+
+Container#app-container {
+  layout: horizontal;
   border: solid yellow;
-  align-horizontal: center;
-  height: auto;
-  width: 75vw;
 }
 
+#sidebar {
+  dock: left;
+  width: 20%;
+}
+
+Container#trace-container {
+  layout: vertical;
+  border: solid orange;
+  align-horizontal: center;
+  width: 3fr;
+}
 TraceTable {
-  height: auto;
   padding: 1;
-  margin: 0 5 5 5;
   /* min-height: 10vh; */
 }
 
 DomainNameInput {
-  height: 10vh;
-  margin: 0 5 0 5;
+  border: hkey grey;
+  height: 5;
   layout: horizontal;
-  align-vertical: middle;
+}
+
+DomainNameInput Label {
+  width: 1fr;
+  content-align: center middle;
+  padding: 1;
+  
+}
+
+DomainNameInput Input {
+  width: 3fr;
+  margin: 0 5 0 2;
 }
 
 

@@ -31,7 +31,8 @@ class TraceTable(Widget):
                 hop.rtt.buffer[-1],
                 hop.rtt.exp_std,
                 hop.n_failed_measurements + hop.n_successful_measurements,
-                hop.n_failed_measurements
+                100
+                * hop.n_failed_measurements
                 / (hop.n_failed_measurements + hop.n_successful_measurements),
             )
             rows.append(row)

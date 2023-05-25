@@ -2,7 +2,7 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import HorizontalScroll, Vertical, Container, VerticalScroll
 from textual.reactive import reactive
-from textual.widgets import Footer, Header
+from textual.widgets import Footer, Header, Placeholder
 from pingtracer.core.tracer import Tracer
 from pingtracer.core.transport.services import ICMPReplyWatcher, RequestDispatcher
 from pingtracer.tui.widgets.search import DomainNameInput
@@ -39,9 +39,11 @@ class PingTracer(App):
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
-        with Container(id="trace-container"):
-            yield self.domain_input
-            yield self.trace_table
+        with Container(id="app-container"):
+            yield Placeholder(id="sidebar")
+            with Container(id="trace-container"):
+                yield self.domain_input
+                yield self.trace_table
         yield Footer()
 
 
