@@ -9,17 +9,23 @@ Container#app-container {
   width: 20%;
 }
 
-Container#trace-container {
+Container#content-container {
   layout: vertical;
   border: solid orange;
   align-horizontal: center;
   width: 3fr;
 }
-TraceTable {
+
+HopList {
   padding: 1;
+  height: 3fr;
   /* min-height: 10vh; */
 }
 
+HopListItem {
+  height: 6;
+  border: solid green;
+}
 DomainNameInput {
   border: hkey grey;
   height: 5;

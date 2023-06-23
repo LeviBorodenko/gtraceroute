@@ -12,7 +12,6 @@ class RouteHop:
 
     hop: int
     _found_all_hops: asyncio.Event
-    last_known_rtt: float = float("inf")
     n_successful_measurements: int = 0
     n_failed_measurements: int = 0
 
