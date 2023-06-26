@@ -1,4 +1,3 @@
-from os import error
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import HorizontalScroll, Vertical, Container, VerticalScroll
@@ -32,8 +31,8 @@ class PingTracer(App):
 
     async def poll_tracing_status(self):
         self.hop_list.hops = self.tracer.hops
-        if self.tracer._found_all_hops.is_set():
-            self.polling_timer.stop()
+        # if self.tracer._found_all_hops.is_set():
+        #     self.polling_timer.stop()
 
     # def on_trace_table_hop_selected(self, event: TraceTable.HopSelected):
     #     hop_idx = min(max(0, event.hop - 1), len(self.hop_list.hops) - 1)

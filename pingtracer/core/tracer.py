@@ -46,7 +46,7 @@ class Tracer:
             asyncio.create_task(
                 await_or_cancel_on_event(self.hop_probing(target_ipv4, hop), self.stop)
             )
-            await asyncio.sleep(0.25)
+            await asyncio.sleep(0.5)
 
         if not return_early:
             await self.stop.wait()

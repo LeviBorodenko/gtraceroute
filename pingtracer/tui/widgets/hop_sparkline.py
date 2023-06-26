@@ -9,13 +9,12 @@ class HopSparkline(Sparkline):
     def __init__(
         self,
         hop: RouteHop,
-        update_interval: int = 1,
         *,
         summary_function: Callable[[Sequence[float]], float] | None = None,
         name: str | None = None,
         id: str | None = None,
         classes: str | None = None,
-        disabled: bool = False
+        disabled: bool = False,
     ) -> None:
         self.hop = hop
         super().__init__(
@@ -26,7 +25,7 @@ class HopSparkline(Sparkline):
             classes=classes,
             disabled=disabled,
         )
-        self.set_interval(update_interval, self.update_data)
+        # self.set_interval(update_interval, self.update_data)
 
     def update_data(self):
         self.data = list(self.hop.rtt.buffer)

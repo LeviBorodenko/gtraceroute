@@ -18,6 +18,13 @@ class RouteHop:
     hop_ipv4: str | None = None
     rtt: RTTMonitor = field(default_factory=lambda: RTTMonitor())
 
+    def __eq__(self, __value: "RouteHop") -> bool:
+        return (
+            self.hop == __value.hop
+            and self.target_ipv4 == __value.target_ipv4
+            and self.rtt.exp_avg == __value.rtt.exp_avg
+        )
+
     def update_rtt_estimates(self, request: ProbeRequest, reply: ProbeReply):
         rtt = reply.receive_ts - request.dispatch_ts
         self.rtt.observe(1000 * rtt)
