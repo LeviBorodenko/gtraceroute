@@ -25,6 +25,20 @@ class HopListItem(Widget):
             *children, name=name, id=id, classes=classes, disabled=disabled
         )
 
+    def action_update_hop(self, new_hop: RouteHop):
+        avg_rtt = new_hop.rtt.exp_avg or float("inf")
+        std_rtt = new_hop.rtt.exp_std or float("inf")
+        packet_loss = (
+            100
+            * new_hop.n_failed_measurements
+            / (new_hop.n_failed_measurements + new_hop.n_successful_measurements)
+        )
+        self.hop_static.update(f"#{new_hop.hop}")
+        self.ip_static.update(f"{new_hop.hop_ipv4}")
+        self.rtt_static.update(f"RTT: {avg_rtt:.2f}ms +/- {std_rtt:.2f}")
+        self.loss_static.update(f"Loss: {packet_loss:.2f}")
+        self.sparkline.update_data()
+
     def compose(self) -> ComposeResult:
         avg_rtt = self.hop.rtt.exp_avg or float("inf")
         std_rtt = self.hop.rtt.exp_std or float("inf")
@@ -34,9 +48,17 @@ class HopListItem(Widget):
             / (self.hop.n_failed_measurements + self.hop.n_successful_measurements)
         )
         with VerticalScroll(classes="hop-list-item-wrapper"):
-            with Horizontal(classes="hop-list-item-label-wrapper"):
-                yield Label(f"#{self.hop.hop} ")
-                yield Label(f"{self.hop.hop_ipv4} ")
-                yield Static(f"RTT: {avg_rtt:.2f}ms +/- {std_rtt:.2f}")
-                yield Static(f"Loss: {packet_loss:.2f}")
-            yield HopSparkline(self.hop)
+            with Vertical(classes="hop-list-item-label-wrapper"):
+                self.hop_static = Static(f"#{self.hop.hop}", shrink=True)
+                yield self.hop_static
+                self.ip_static = Static(f"{self.hop.hop_ipv4}", shrink=True)
+                yield self.ip_static
+                self.rtt_static = Static(
+                    f"RTT: {avg_rtt:.2f}ms +/- {std_rtt:.2f}", shrink=True
+                )
+                yield self.rtt_static
+                self.loss_static = Static(f"Loss: {packet_loss:.2f}", shrink=True)
+                yield self.loss_static
+
+            self.sparkline = HopSparkline(self.hop)
+            yield self.sparkline

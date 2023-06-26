@@ -21,6 +21,11 @@ class PingTracer(App):
 
     def watch_target_ipv4(self, new_target_ipv4: str):
         if new_target_ipv4 is not None:
+            try:
+                self.polling_timer.stop()
+            except AttributeError:
+                pass
+            self.hop_list.hops = []
             self.start_tracing(new_target_ipv4)
 
     @work(exclusive=True)
@@ -31,8 +36,6 @@ class PingTracer(App):
 
     async def poll_tracing_status(self):
         self.hop_list.hops = self.tracer.hops
-        # if self.tracer._found_all_hops.is_set():
-        #     self.polling_timer.stop()
 
     # def on_trace_table_hop_selected(self, event: TraceTable.HopSelected):
     #     hop_idx = min(max(0, event.hop - 1), len(self.hop_list.hops) - 1)
