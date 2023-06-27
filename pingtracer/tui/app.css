@@ -1,36 +1,29 @@
-
-Container#app-container {
-  layout: horizontal;
-  border: solid yellow;
-}
-
-#sidebar {
-  dock: left;
-  width: 20%;
-}
-
-Container#content-container {
+#app-container {
   layout: vertical;
-  border: solid orange;
-  align-horizontal: center;
-  width: 3fr;
-}
-
-HopList {
-  padding: 1;
-  height: 3fr;
-  /* min-height: 10vh; */
-}
-
-HopListItem {
-  height: 6;
-  border: solid green;
+  border: solid yellow;
 }
 DomainNameInput {
   border: hkey grey;
   height: 5;
   layout: horizontal;
 }
+
+TracerWidget {
+  border: solid orange;
+  layout: vertical;
+}
+/* #sidebar { */
+/*   dock: left; */
+/*   width: 20%; */
+/* } */
+
+/* Container#content-container { */
+/*   layout: vertical; */
+/*   border: solid orange; */
+/*   align-horizontal: center; */
+/*   width: 3fr; */
+/* } */
+
 
 DomainNameInput Label {
   width: 1fr;
@@ -42,6 +35,16 @@ DomainNameInput Label {
 DomainNameInput Input {
   width: 3fr;
   margin: 0 5 0 2;
+}
+
+
+HopList {
+  padding: 1;
+}
+
+HopListItem {
+  height: 4;
+  border: solid green;
 }
 
 

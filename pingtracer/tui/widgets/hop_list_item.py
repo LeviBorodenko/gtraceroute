@@ -26,39 +26,24 @@ class HopListItem(Widget):
         )
 
     def action_update_hop(self, new_hop: RouteHop):
-        avg_rtt = new_hop.rtt.exp_avg or float("inf")
-        std_rtt = new_hop.rtt.exp_std or float("inf")
+        self.hop_statistic.update(HopListItem.statistic_str_from_hop(new_hop))
+        self.sparkline.update(new_hop)
+
+    @staticmethod
+    def statistic_str_from_hop(hop: RouteHop) -> str:
+        avg_rtt = hop.rtt.exp_avg or float("inf")
+        std_rtt = hop.rtt.exp_std or float("inf")
         packet_loss = (
             100
-            * new_hop.n_failed_measurements
-            / (new_hop.n_failed_measurements + new_hop.n_successful_measurements)
+            * hop.n_failed_measurements
+            / (hop.n_failed_measurements + hop.n_successful_measurements)
         )
-        self.hop_static.update(f"#{new_hop.hop}")
-        self.ip_static.update(f"{new_hop.hop_ipv4}")
-        self.rtt_static.update(f"RTT: {avg_rtt:.2f}ms +/- {std_rtt:.2f}")
-        self.loss_static.update(f"Loss: {packet_loss:.2f}%")
-        self.sparkline.update_data()
+        return f"#{hop.hop}@{hop.hop_ipv4}: RTT: {avg_rtt:.2f}ms +/- {std_rtt:.2f} | Loss: {packet_loss:.2f}%"
 
     def compose(self) -> ComposeResult:
-        avg_rtt = self.hop.rtt.exp_avg or float("inf")
-        std_rtt = self.hop.rtt.exp_std or float("inf")
-        packet_loss = (
-            100
-            * self.hop.n_failed_measurements
-            / (self.hop.n_failed_measurements + self.hop.n_successful_measurements)
-        )
-        with VerticalScroll(classes="hop-list-item-wrapper"):
-            with Vertical(classes="hop-list-item-label-wrapper"):
-                self.hop_static = Static(f"#{self.hop.hop}", shrink=True)
-                yield self.hop_static
-                self.ip_static = Static(f"{self.hop.hop_ipv4}", shrink=True)
-                yield self.ip_static
-                self.rtt_static = Static(
-                    f"RTT: {avg_rtt:.2f}ms +/- {std_rtt:.2f}", shrink=True
-                )
-                yield self.rtt_static
-                self.loss_static = Static(f"Loss: {packet_loss:.2f}%", shrink=True)
-                yield self.loss_static
+        with Vertical(classes="hop-list-item-wrapper"):
+            self.hop_statistic = Static(HopListItem.statistic_str_from_hop(self.hop))
+            yield self.hop_statistic
 
             self.sparkline = HopSparkline(self.hop)
             yield self.sparkline
