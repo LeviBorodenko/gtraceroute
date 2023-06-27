@@ -15,6 +15,7 @@ icmp_watcher = ICMPReplyWatcher()
 class PingTracer(App):
     CSS_PATH = "app.css"
     target_ipv4 = reactive(None)
+    polling_rate: reactive[float] = reactive(0.5)
     hop_list: HopList = HopList()
     domain_input = DomainNameInput(id="domain-input")
     tracer: Tracer
@@ -26,12 +27,12 @@ class PingTracer(App):
             except AttributeError:
                 pass
             self.hop_list.hops = []
-            self.start_tracing(new_target_ipv4)
+            self.start_tracing(new_target_ipv4, self.polling_rate)
 
     @work(exclusive=True)
-    async def start_tracing(self, target_ipv4: str):
+    async def start_tracing(self, target_ipv4: str, polling_rate: float):
         self.tracer = Tracer(dispatcher, icmp_watcher)
-        self.polling_timer = self.set_interval(0.5, self.poll_tracing_status)
+        self.polling_timer = self.set_interval(polling_rate, self.poll_tracing_status)
         await self.tracer.trace_route(target_ipv4, return_early=False)
 
     async def poll_tracing_status(self):

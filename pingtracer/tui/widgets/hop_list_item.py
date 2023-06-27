@@ -36,7 +36,7 @@ class HopListItem(Widget):
         self.hop_static.update(f"#{new_hop.hop}")
         self.ip_static.update(f"{new_hop.hop_ipv4}")
         self.rtt_static.update(f"RTT: {avg_rtt:.2f}ms +/- {std_rtt:.2f}")
-        self.loss_static.update(f"Loss: {packet_loss:.2f}")
+        self.loss_static.update(f"Loss: {packet_loss:.2f}%")
         self.sparkline.update_data()
 
     def compose(self) -> ComposeResult:
@@ -57,7 +57,7 @@ class HopListItem(Widget):
                     f"RTT: {avg_rtt:.2f}ms +/- {std_rtt:.2f}", shrink=True
                 )
                 yield self.rtt_static
-                self.loss_static = Static(f"Loss: {packet_loss:.2f}", shrink=True)
+                self.loss_static = Static(f"Loss: {packet_loss:.2f}%", shrink=True)
                 yield self.loss_static
 
             self.sparkline = HopSparkline(self.hop)
