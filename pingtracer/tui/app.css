@@ -37,9 +37,23 @@ DomainNameInput Input {
   margin: 0 5 0 2;
 }
 
+DomainNameInput Input.-valid {
+  border: tall $success 60%;
+}
+DomainNameInput Input.-valid:focus {
+  border: tall $success 60%;
+}
+
+DomainNameInput #action-container {
+  width: 2fr;
+}
+DomainNameInput #action-container Button {
+  width: 25;
+}
 
 HopList {
   padding: 1;
+  height: auto;
 }
 
 HopListItem {

@@ -1,17 +1,29 @@
 from collections import deque
 from dataclasses import dataclass, field
+from functools import cache
 import socket
 import asyncio
 from typing import Optional, Coroutine, TypeVar, Any
+import re
 
 PROBE_BASE_PORT = 33434
 PROBE_UDP_PAYLOAD_SIZE = 8
 
+VALID_ADDRESS_RE = re.compile(r"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$")
 
+
+@cache
 def get_ipv4(host: str) -> str:
-    addr_info = socket.getaddrinfo(host, None, socket.AF_INET, proto=socket.SOCK_DGRAM)
-    ipv4_info = [info[-1][0] for info in addr_info if info[0] == socket.AF_INET]
-    return ipv4_info[0]
+    if VALID_ADDRESS_RE.match(host.lower()) is None:
+        raise InvalidAddressException(f"{host} is not a valid address for IPv4 lookup.")
+    try:
+        addr_info = socket.getaddrinfo(
+            host, None, socket.AF_INET, proto=socket.SOCK_DGRAM
+        )
+        ipv4_info = [info[-1][0] for info in addr_info if info[0] == socket.AF_INET]
+        return ipv4_info[0]
+    except Exception:
+        raise InvalidAddressException(f"No IPv4 for {host}.")
 
 
 async def async_recv(sock: socket.socket, timeout: int | None = None) -> bytes:
@@ -46,6 +58,10 @@ async def await_or_cancel_on_event(
 
 
 class InvalidProbeReplyException(Exception):
+    pass
+
+
+class InvalidAddressException(Exception):
     pass
 
 
