@@ -1,15 +1,16 @@
 #app-container {
   layout: vertical;
-  border: solid yellow;
 }
 DomainNameInput {
-  border: hkey grey;
+  border: hkey $surface;
+  background: $secondary-background;
   height: 5;
   layout: horizontal;
 }
 
 TracerWidget {
-  border: solid orange;
+  border: solid $primary-background;
+  background: $panel-darken-1;
   layout: vertical;
 }
 /* #sidebar { */
@@ -17,22 +18,18 @@ TracerWidget {
 /*   width: 20%; */
 /* } */
 
-/* Container#content-container { */
-/*   layout: vertical; */
-/*   border: solid orange; */
-/*   align-horizontal: center; */
-/*   width: 3fr; */
-/* } */
 
 
 DomainNameInput Label {
   width: 1fr;
   content-align: center middle;
   padding: 1;
+  background: $primary;
   
 }
 
 DomainNameInput Input {
+  background: $primary;
   width: 3fr;
   margin: 0 5 0 2;
 }
@@ -48,6 +45,7 @@ DomainNameInput #action-container {
   width: 2fr;
 }
 DomainNameInput #action-container Button {
+  background: $accent;
   width: 25;
 }
 
@@ -57,8 +55,22 @@ HopList {
 }
 
 HopListItem {
-  height: 4;
-  border: solid green;
+  height: auto;
+  border: solid $primary;
+  layout: horizontal;
 }
 
+HopListItem Static{
+  width: 1fr;
+  content-align: left top;
+}
+HopListItem HopSparkline{
+  width: 2fr;
+}
 
+.error-state {
+  border: solid $error;
+}
+.warn-state {
+  border: solid $warning;
+}

@@ -13,7 +13,7 @@ class HopList(Widget):
     def watch_hops(self, new_hops: list[RouteHop]):
         # WE ASSUME THAT THE TARGET IPV4 DOES NOT CHANGE DURING THE LIFETIME OF THIS WIDGET
         # Thus: It has to be recreated for other targets!
-        container = self.query_one("#hop-list", VerticalScroll)
+        container = self.get_child_by_id("hop-list", VerticalScroll)
         hop_list_item_by_hop = {
             listitem.hop.hop: listitem
             for listitem in container.query("#hop-list HopListItem").results(

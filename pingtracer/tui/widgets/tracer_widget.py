@@ -1,5 +1,5 @@
 from textual import work
-from textual.app import App, ComposeResult
+from textual.app import ComposeResult
 from textual.widget import Widget
 from pingtracer.core.tracer import Tracer
 from pingtracer.core.transport.services import ICMPReplyWatcher, RequestDispatcher
@@ -35,11 +35,9 @@ class TracerWidget(Widget):
         await self.tracer.trace_route(target_ipv4, return_early=False)
 
     async def poll_tracing_status(self):
-        print("polling")
         self.hop_list.hops = self.tracer.hops
 
     def on_unmount(self):
-        print("unmounted")
         self.polling_timer.stop()
 
     # def on_trace_table_hop_selected(self, event: TraceTable.HopSelected):

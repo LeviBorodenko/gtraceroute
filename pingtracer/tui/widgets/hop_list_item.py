@@ -1,5 +1,6 @@
+from time import time
+from typing import ClassVar
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Label, LoadingIndicator, Placeholder, Pretty, Static
@@ -25,9 +26,18 @@ class HopListItem(Widget):
             *children, name=name, id=id, classes=classes, disabled=disabled
         )
 
+    CONNECTION_TIMEOUT_S: ClassVar[float] = 1
+    MAX_RTT_MS: ClassVar[float] = 500
+
     def action_update_hop(self, new_hop: RouteHop):
         self.hop_statistic.update(HopListItem.statistic_str_from_hop(new_hop))
         self.sparkline.update(new_hop)
+        time_last_ob = new_hop.rtt.time_last_ob or 0
+        self.set_class(
+            is_timeout := time() - time_last_ob > HopListItem.CONNECTION_TIMEOUT_S,
+            "warn-state",
+        )
+        self.border_title = "Lost Connection" if is_timeout else None
 
     @staticmethod
     def statistic_str_from_hop(hop: RouteHop) -> str:
@@ -38,12 +48,17 @@ class HopListItem(Widget):
             * hop.n_failed_measurements
             / (hop.n_failed_measurements + hop.n_successful_measurements)
         )
-        return f"#{hop.hop}@{hop.hop_ipv4}: RTT: {avg_rtt:.2f}ms +/- {std_rtt:.2f} | Loss: {packet_loss:.2f}%"
+        hop_ipv4 = hop.hop_ipv4 or "xxx.xxx.xxx.xxx"
+
+        first_col = f"#{hop.hop}@{hop_ipv4:<15}"
+        second_col = f"RTT: {avg_rtt:.2f}ms +/- {std_rtt:.2f}"
+        third_col = f"Loss: {packet_loss:.2f}%"
+        return f"{first_col:>19} | {second_col:<23} | {third_col:<13}"
 
     def compose(self) -> ComposeResult:
-        with Vertical(classes="hop-list-item-wrapper"):
-            self.hop_statistic = Static(HopListItem.statistic_str_from_hop(self.hop))
-            yield self.hop_statistic
-
-            self.sparkline = HopSparkline(self.hop)
-            yield self.sparkline
+        self.hop_statistic = Static(
+            HopListItem.statistic_str_from_hop(self.hop), shrink=True
+        )
+        yield self.hop_statistic
+        self.sparkline = HopSparkline(self.hop)
+        yield self.sparkline

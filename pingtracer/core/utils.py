@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from functools import cache
 import socket
 import asyncio
+from time import time
 from typing import Optional, Coroutine, TypeVar, Any
 import re
 
@@ -73,8 +74,10 @@ class RTTMonitor:
     exp_avg: float | None = None
     exp_std: float | None = None
     no_obs: bool = True
+    time_last_ob: float | None = None
 
     def observe(self, rtt: float):
+        self.time_last_ob = time()
         self.no_obs = False
         self.buffer.append(rtt)
         self.exp_avg = (
