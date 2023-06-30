@@ -100,7 +100,6 @@ class ProbeReply:
         payload_byte_size: int = PROBE_UDP_PAYLOAD_SIZE,
     ) -> "ProbeReply":
         receive_ts = receive_ts or time.time()
-
         ipv4_header = IPv4Header.from_bytes(icmp_packet[:20])
         if ipv4_header.protocol != 1:
             raise InvalidProbeReplyException(

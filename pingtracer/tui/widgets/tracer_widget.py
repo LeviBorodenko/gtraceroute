@@ -2,11 +2,8 @@ from textual import work
 from textual.app import ComposeResult
 from textual.widget import Widget
 from pingtracer.core.tracer import Tracer
-from pingtracer.core.transport.services import ICMPReplyWatcher, RequestDispatcher
 from pingtracer.tui.widgets.hop_list import HopList
-
-dispatcher = RequestDispatcher()
-icmp_watcher = ICMPReplyWatcher()
+from pingtracer.tui import dispatcher, icmp_watcher
 
 
 class TracerWidget(Widget):
@@ -39,13 +36,6 @@ class TracerWidget(Widget):
 
     def on_unmount(self):
         self.polling_timer.stop()
-
-    # def on_trace_table_hop_selected(self, event: TraceTable.HopSelected):
-    #     hop_idx = min(max(0, event.hop - 1), len(self.hop_list.hops) - 1)
-    #     hop = self.hop_list.hops[hop_idx]
-    #     self.query_one("#chart-container", Container).mount(
-    #         HopSparkline(hop, summary_function=max)
-    #     )
 
     def compose(self) -> ComposeResult:
         self.hop_list = HopList()

@@ -49,7 +49,7 @@ class RouteHop:
         self,
         dispatcher: RequestDispatcher,
         reply_watcher: ICMPReplyWatcher,
-        timeout: int = 10,
+        timeout: int = 1,
     ):
         try:
             async with asyncio.timeout(timeout):

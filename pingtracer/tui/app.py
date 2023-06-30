@@ -2,12 +2,8 @@ from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.css.query import NoMatches
 from textual.widgets import LoadingIndicator
-from pingtracer.core.transport.services import ICMPReplyWatcher, RequestDispatcher
 from pingtracer.tui.widgets.target_input import TargetInput
 from pingtracer.tui.widgets.tracer_widget import TracerWidget
-
-dispatcher = RequestDispatcher()
-icmp_watcher = ICMPReplyWatcher()
 
 
 class PingTracer(App):

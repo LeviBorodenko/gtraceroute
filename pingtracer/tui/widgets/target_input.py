@@ -19,7 +19,7 @@ def is_domain_name(candidate: str) -> bool:
 
 class TargetInput(Widget):
     input: Input = Input(
-        placeholder="Enter name or ip here",
+        placeholder="Enter Name or IP here",
         validators=[Function(is_domain_name, "Input is not a valid domain name.")],
     )
     target_ipv4: reactive[str | None]

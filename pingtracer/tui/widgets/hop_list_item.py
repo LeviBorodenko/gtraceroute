@@ -3,7 +3,7 @@ from typing import ClassVar
 from textual.app import ComposeResult
 from textual.reactive import reactive
 from textual.widget import Widget
-from textual.widgets import Label, LoadingIndicator, Placeholder, Pretty, Static
+from textual.widgets import Static
 
 from pingtracer.core.application.services import RouteHop
 from pingtracer.tui.widgets.hop_sparkline import HopSparkline
@@ -37,7 +37,7 @@ class HopListItem(Widget):
             is_timeout := time() - time_last_ob > HopListItem.CONNECTION_TIMEOUT_S,
             "warn-state",
         )
-        self.border_title = "Lost Connection" if is_timeout else None
+        self.border_title = "Package Loss" if is_timeout else None
 
     @staticmethod
     def statistic_str_from_hop(hop: RouteHop) -> str:
