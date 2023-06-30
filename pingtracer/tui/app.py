@@ -1,9 +1,9 @@
 from textual.app import App, ComposeResult
-from textual.containers import HorizontalScroll, Vertical, Container, VerticalScroll
+from textual.containers import Vertical
 from textual.css.query import NoMatches
-from textual.widgets import Footer, Header, LoadingIndicator, Placeholder
+from textual.widgets import LoadingIndicator
 from pingtracer.core.transport.services import ICMPReplyWatcher, RequestDispatcher
-from pingtracer.tui.widgets.search import DomainNameInput
+from pingtracer.tui.widgets.target_input import TargetInput
 from pingtracer.tui.widgets.tracer_widget import TracerWidget
 
 dispatcher = RequestDispatcher()
@@ -13,7 +13,7 @@ icmp_watcher = ICMPReplyWatcher()
 class PingTracer(App):
     CSS_PATH = "app.css"
 
-    async def on_domain_name_input_submitted(self, event: DomainNameInput.Submitted):
+    async def on_target_input_submitted(self, event: TargetInput.Submitted):
         try:
             self.query_one(TracerWidget).remove()
         except NoMatches:
@@ -26,9 +26,8 @@ class PingTracer(App):
         await self.query_one("#app-container", Vertical).mount(new_tracer_widget)
 
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=True)
         with Vertical(id="app-container"):
-            yield DomainNameInput(id="domain-input")
+            yield TargetInput(id="domain-input")
             yield LoadingIndicator(id="tracer-widget-placeholder")
 
 

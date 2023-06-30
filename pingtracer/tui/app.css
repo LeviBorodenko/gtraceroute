@@ -1,9 +1,9 @@
 #app-container {
   layout: vertical;
 }
-DomainNameInput {
+TargetInput {
   border: hkey $surface;
-  background: $secondary-background;
+  background: $panel;
   height: 5;
   layout: horizontal;
 }
@@ -13,14 +13,10 @@ TracerWidget {
   background: $panel-darken-1;
   layout: vertical;
 }
-/* #sidebar { */
-/*   dock: left; */
-/*   width: 20%; */
-/* } */
 
 
 
-DomainNameInput Label {
+TargetInput #greeter {
   width: 1fr;
   content-align: center middle;
   padding: 1;
@@ -28,25 +24,31 @@ DomainNameInput Label {
   
 }
 
-DomainNameInput Input {
+
+TargetInput Input.-valid {
+  border: tall $success 60%;
+}
+TargetInput Input.-valid:focus {
+  border: tall $success 60%;
+}
+
+TargetInput #action-container {
+  width: 4fr;
+  align: right middle;
+}
+
+TargetInput #action-container Label {
+  content-align: center middle;
+  height: 3;
+}
+TargetInput #action-container Input {
   background: $primary;
-  width: 3fr;
-  margin: 0 5 0 2;
+  width: 50;
+  margin: 0 5 0 5;
 }
-
-DomainNameInput Input.-valid {
-  border: tall $success 60%;
-}
-DomainNameInput Input.-valid:focus {
-  border: tall $success 60%;
-}
-
-DomainNameInput #action-container {
-  width: 2fr;
-}
-DomainNameInput #action-container Button {
+TargetInput #action-container Button {
   background: $accent;
-  width: 25;
+  width: 30;
 }
 
 HopList {

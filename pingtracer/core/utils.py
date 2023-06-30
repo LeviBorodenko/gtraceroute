@@ -6,17 +6,29 @@ import asyncio
 from time import time
 from typing import Optional, Coroutine, TypeVar, Any
 import re
+import ipaddress
 
 PROBE_BASE_PORT = 33434
 PROBE_UDP_PAYLOAD_SIZE = 8
 
 VALID_ADDRESS_RE = re.compile(r"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$")
+VALID_IPV4_RE = re.compile(
+    r"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+)
+
+
+def is_ipv4_address(string: str) -> bool:
+    try:
+        ipaddress.IPv4Address(string)
+        return True
+    except ipaddress.AddressValueError:
+        return False
 
 
 @cache
 def get_ipv4(host: str) -> str:
-    if VALID_ADDRESS_RE.match(host.lower()) is None:
-        raise InvalidAddressException(f"{host} is not a valid address for IPv4 lookup.")
+    # if VALID_ADDRESS_RE.match(host.lower()) is None or not is_ipv4_address(host):
+    #     raise InvalidAddressException(f"{host} is not a valid address for IPv4 lookup.")
     try:
         addr_info = socket.getaddrinfo(
             host, None, socket.AF_INET, proto=socket.SOCK_DGRAM
