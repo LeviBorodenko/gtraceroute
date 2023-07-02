@@ -27,9 +27,11 @@ class TargetInput(Widget):
 
     class Submitted(Message):
         target_ipv4: str
+        target_name: str
 
-        def __init__(self, target_ipv4: str) -> None:
+        def __init__(self, target_name: str, target_ipv4: str) -> None:
             self.target_ipv4 = target_ipv4
+            self.target_name = target_name
             super().__init__()
 
     @work
@@ -47,11 +49,11 @@ class TargetInput(Widget):
 
     def on_input_submitted(self):
         assert self.target_ipv4 is not None
-        self.post_message(TargetInput.Submitted(self.target_ipv4))
+        self.post_message(TargetInput.Submitted(self.input.value, self.target_ipv4))
 
     def on_button_pressed(self):
         assert self.target_ipv4 is not None
-        self.post_message(TargetInput.Submitted(self.target_ipv4))
+        self.post_message(TargetInput.Submitted(self.input.value, self.target_ipv4))
 
     def compose(self) -> ComposeResult:
         yield Static("[bold]PingTracer[/bold] v0", id="greeter")

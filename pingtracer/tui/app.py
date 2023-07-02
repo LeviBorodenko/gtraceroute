@@ -1,7 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.css.query import NoMatches
-from textual.widgets import LoadingIndicator
+from textual.widgets import Input, LoadingIndicator
 from pingtracer.tui.widgets.target_input import TargetInput
 from pingtracer.tui.widgets.target_list import TargetList
 from pingtracer.tui.widgets.tracer_widget import TracerWidget
@@ -22,7 +22,17 @@ class PingTracer(App):
         new_tracer_widget = TracerWidget(event.target_ipv4, id="tracer-widget")
         await self.query_one("#content-container", Container).mount(new_tracer_widget)
 
-        self.query_one(TargetList).add_target("test", event.target_ipv4)
+        sidebar = self.query_one(TargetList)
+        sidebar.highlighted = None
+        sidebar.add_target(event.target_name, event.target_ipv4)
+
+    async def on_option_list_option_selected(self, event: TargetList.OptionSelected):
+        target_ipv4 = event.option.id
+
+        self.query_one(TracerWidget).remove()
+        new_tracer_widget = TracerWidget(str(target_ipv4), id="tracer-widget")
+        self.query_one("TargetInput Input", Input).value = str(target_ipv4)
+        await self.query_one("#content-container", Container).mount(new_tracer_widget)
 
     def compose(self) -> ComposeResult:
         with Container(id="app-container"):
