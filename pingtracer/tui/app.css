@@ -78,11 +78,12 @@ HopListItem {
 }
 
 HopListItem Static{
-  width: 1fr;
+  width: 60;
+  margin-right: 1;
   content-align: left top;
 }
 HopListItem HopSparkline{
-  width: 2fr;
+  width: auto;
 }
 
 .error-state {

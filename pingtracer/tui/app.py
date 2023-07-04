@@ -23,7 +23,6 @@ class PingTracer(App):
         await self.query_one("#content-container", Container).mount(new_tracer_widget)
 
         sidebar = self.query_one(TargetList)
-        sidebar.highlighted = None
         sidebar.add_target(event.target_name, event.target_ipv4)
 
     async def on_option_list_option_selected(self, event: TargetList.OptionSelected):
