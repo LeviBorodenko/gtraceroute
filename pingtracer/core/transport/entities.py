@@ -75,6 +75,8 @@ class ProbeRequest:
     def matches(self, reply: "ProbeReply") -> bool:
         if reply.ref_udp_payload == self.udp_payload:
             return True
+        elif self.dispatch_ts > reply.receive_ts:
+            return False
         elif (
             self.ipv4 == reply.ref_ipv4_header.dst_ip
             and self.port == reply.ref_udp_header.dst_port

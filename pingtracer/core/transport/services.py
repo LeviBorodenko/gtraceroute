@@ -61,7 +61,6 @@ class ICMPReplyWatcher:
         probe_bytes = await await_or_cancel_on_event(
             async_recv(self.icmp_socket), stop_awaiting_bytes
         )
-        print("HAHAHA", probe_bytes)
 
         if probe_bytes is None:
             return
