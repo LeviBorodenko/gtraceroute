@@ -4,10 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gtraceroute"
+version = "0.1.0"
 authors = [
     {name = "Levi Borodenko", email = "levi.borodenko@gmail.com"},
 ]
-description = "TUI for tracing routes"
+description = """gTraceroute is a sophisticated network diagnostic tool, combining the utility
+of traditional traceroute with a user-friendly text interface similar to PingPlotter. """
 requires-python = ">=3.11"
 license = {text = "BSD-3-Clause"}
 classifiers = [
@@ -17,7 +19,6 @@ dependencies = [
     'textual==0.29'
 ]
 
-dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = ["textual-dev", "black", "pytest", "pytest-asyncio", "pre-commit", "mypy"]
@@ -26,4 +27,4 @@ dev = ["textual-dev", "black", "pytest", "pytest-asyncio", "pre-commit", "mypy"]
 line-length = 120
 
 [project.scripts]
-# test-trace = "pingtracer.core.tracer:test_run"
+gtraceroute = "gtraceroute.tui.app:run"

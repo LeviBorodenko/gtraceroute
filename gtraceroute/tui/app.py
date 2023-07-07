@@ -41,6 +41,10 @@ class gTraceroute(App):
                 yield LoadingIndicator(id="tracer-widget-placeholder")
 
 
-if __name__ == "__main__":
+def run():
     app = gTraceroute()
     app.run()
+
+
+if __name__ == "__main__":
+    run()
