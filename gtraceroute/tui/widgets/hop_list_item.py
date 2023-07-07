@@ -5,8 +5,8 @@ from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Static
 
-from pingtracer.core.application.services import RouteHop
-from pingtracer.tui.widgets.hop_sparkline import HopSparkline
+from gtraceroute.core.application.services import RouteHop
+from gtraceroute.tui.widgets.hop_sparkline import HopSparkline
 
 
 class HopListItem(Widget):

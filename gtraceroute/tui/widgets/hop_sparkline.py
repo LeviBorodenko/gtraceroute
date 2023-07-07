@@ -1,6 +1,6 @@
 from collections.abc import Callable, Sequence
-from textual.widgets import Placeholder, Sparkline
-from pingtracer.core.application.services import RouteHop
+from textual.widgets import Sparkline
+from gtraceroute.core.application.services import RouteHop
 
 
 class HopSparkline(Sparkline):

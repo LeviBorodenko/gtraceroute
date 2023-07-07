@@ -1,8 +1,8 @@
 import asyncio
 from dataclasses import dataclass, field
-from pingtracer.core.application.services import RouteHop
-from pingtracer.core.transport.services import ICMPReplyWatcher, RequestDispatcher
-from pingtracer.core.utils import await_or_cancel_on_event, get_ipv4
+from gtraceroute.core.application.services import RouteHop
+from gtraceroute.core.transport.services import ICMPReplyWatcher, RequestDispatcher
+from gtraceroute.core.utils import await_or_cancel_on_event, get_ipv4
 
 
 @dataclass

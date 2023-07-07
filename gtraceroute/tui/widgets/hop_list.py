@@ -3,8 +3,8 @@ from textual.containers import VerticalScroll
 from textual.reactive import reactive
 from textual.widget import Widget
 
-from pingtracer.core.application.services import RouteHop
-from pingtracer.tui.widgets.hop_list_item import HopListItem
+from gtraceroute.core.application.services import RouteHop
+from gtraceroute.tui.widgets.hop_list_item import HopListItem
 
 
 def get_unique_by_hop_ipv4(hops: list[RouteHop]) -> list[RouteHop]:
@@ -23,7 +23,6 @@ class HopList(Widget):
     hops: reactive[list[RouteHop]] = reactive([], always_update=True)
 
     async def watch_hops(self, new_hops: list[RouteHop]):
-
         # sometimes the tracer can return the final hop multiple times due to lag
         new_hops = get_unique_by_hop_ipv4(new_hops)
         container = self.get_child_by_id("hop-list", VerticalScroll)

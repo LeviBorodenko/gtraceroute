@@ -6,7 +6,7 @@ from textual.reactive import reactive
 from textual.validation import Function
 from textual.widget import Widget
 from textual.widgets import Button, Input, Label, Static
-from pingtracer.core.utils import InvalidAddressException, get_ipv4
+from gtraceroute.core.utils import InvalidAddressException, get_ipv4
 
 
 def is_domain_name(candidate: str) -> bool:

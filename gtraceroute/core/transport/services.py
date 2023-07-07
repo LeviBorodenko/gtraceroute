@@ -3,8 +3,8 @@ import socket
 import asyncio
 from typing import Deque
 
-from pingtracer.core.transport.entities import ProbeReply, ProbeRequest
-from pingtracer.core.utils import async_recv, async_sendto, await_or_cancel_on_event
+from gtraceroute.core.transport.entities import ProbeReply, ProbeRequest
+from gtraceroute.core.utils import async_recv, async_sendto, await_or_cancel_on_event
 
 
 class RawSocketPermissionError(Exception):
@@ -13,28 +13,31 @@ class RawSocketPermissionError(Exception):
             """
      ERROR: Permission Denied for Creating Raw Socket.
 
-     This application requires a raw socket in order to listen for ICMP (Internet Control Message Protocol) packets,
-     which this tool uses probe intermediate routes.
-     The creation of a raw socket is a privileged operation typically restricted to superuser accounts due to its potential for misuse.
+     This application requires a raw socket in order to listen for ICMP (Internet Control Message Protocol)
+     packets, which this tool uses probe intermediate routes. The creation of a raw socket is a
+     privileged operation typically restricted to superuser accounts due to its potential for misuse.
 
-     If you trust the source of this application and want to proceed, this issue can be resolved by running the following command:
+     If you trust the source of this application and want to proceed, this issue can be resolved by
+     running the following command:
 
      sudo setcap cap_net_raw+ep $(realpath $(which python3))
 
      What does this command do?
-     It uses 'setcap' to assign the 'cap_net_raw' capability to your Python interpreter. 
+     It uses 'setcap' to assign the 'cap_net_raw' capability to your Python interpreter.
 
-     - 'sudo' is a command that allows programs to be run as the superuser, or another user. 
+     - 'sudo' is a command that allows programs to be run as the superuser, or another user.
      - 'setcap' is a utility that sets file capabilities. Capabilities are a subdivision of root's
      powers into a larger set of more narrowly focused privileges.
      - 'cap_net_raw' allows the application to use network protocols that require raw sockets like ICMP.
-     - '+ep' is the action to be performed. 'e' stands for Effective (making it part of the Permitted set that the program can use)
-     and 'p' for Permitted (adding this capability to the inheritable set after an exec()).
-     - 'realpath' and 'which' are used to get the real path to your Python interpreter. 
+     - '+ep' is the action to be performed. 'e' stands for Effective
+     (making it part of the Permitted set that the program can use) and 'p' for Permitted
+     (adding this capability to the inheritable set after an exec()).
+     - 'realpath' and 'which' are used to get the real path to your Python interpreter.
 
-     Please be aware that giving such permissions has security implications, and should be done after understanding and trusting
-     the source of the application. If you are concerned about the integrity or security of this tool,
-     remember that its code is open source, and you are encouraged to review it before granting these permissions.
+     Please be aware that giving such permissions has security implications, and should be done after
+     understanding and trusting the source of the application. If you are concerned about
+     the integrity or security of this tool, remember that its code is open source, and you are
+     encouraged to review it before granting these permissions.
          """
         )
 

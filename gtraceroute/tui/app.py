@@ -2,12 +2,12 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.css.query import NoMatches
 from textual.widgets import Input, LoadingIndicator
-from pingtracer.tui.widgets.target_input import TargetInput
-from pingtracer.tui.widgets.target_list import TargetList
-from pingtracer.tui.widgets.tracer_widget import TracerWidget
+from gtraceroute.tui.widgets.target_input import TargetInput
+from gtraceroute.tui.widgets.target_list import TargetList
+from gtraceroute.tui.widgets.tracer_widget import TracerWidget
 
 
-class PingTracer(App):
+class gTraceroute(App):
     CSS_PATH = "app.css"
 
     async def on_target_input_submitted(self, event: TargetInput.Submitted):
@@ -42,5 +42,5 @@ class PingTracer(App):
 
 
 if __name__ == "__main__":
-    app = PingTracer()
+    app = gTraceroute()
     app.run()

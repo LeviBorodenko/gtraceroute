@@ -3,7 +3,7 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pingtracer"
+name = "gtraceroute"
 authors = [
     {name = "Levi Borodenko", email = "levi.borodenko@gmail.com"},
 ]
@@ -14,10 +14,16 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    'importlib-metadata; python_version<"3.8"',
-    'textual==0.28.1'
+    'textual==0.29'
 ]
+
 dynamic = ["version"]
 
+[project.optional-dependencies]
+dev = ["textual-dev", "black", "pytest", "pytest-asyncio", "pre-commit", "mypy"]
+
+[tool.ruff]
+line-length = 120
+
 [project.scripts]
-test-trace = "pingtracer.core.tracer:test_run"
+# test-trace = "pingtracer.core.tracer:test_run"

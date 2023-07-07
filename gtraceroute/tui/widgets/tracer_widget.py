@@ -1,9 +1,9 @@
 from textual import work
 from textual.app import ComposeResult
 from textual.widget import Widget
-from pingtracer.core.tracer import Tracer
-from pingtracer.tui.widgets.hop_list import HopList
-from pingtracer.tui import dispatcher, icmp_watcher
+from gtraceroute.core.tracer import Tracer
+from gtraceroute.tui.widgets.hop_list import HopList
+from gtraceroute.tui import dispatcher, icmp_watcher
 
 
 class TracerWidget(Widget):

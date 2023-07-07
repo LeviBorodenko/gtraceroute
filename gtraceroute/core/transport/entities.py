@@ -4,7 +4,7 @@ import struct
 from random import randbytes
 from dataclasses import dataclass, field
 
-from pingtracer.core.utils import InvalidProbeReplyException
+from gtraceroute.core.utils import InvalidProbeReplyException
 
 PROBE_BASE_PORT = 33434
 PROBE_UDP_PAYLOAD_SIZE = 8
@@ -117,8 +117,8 @@ class ProbeReply:
                 "ICMP packet does not contain a UDP packet."
             )
         ref_udp_header = UDPHeader.from_bytes(icmp_packet[48:56])
-        ref_udp_payload = icmp_packet[56 : (56 + payload_byte_size)]
-        ref_udp_payload = None if len(ref_udp_payload) == 0 else ref_udp_payload
+        _ref_udp_payload = icmp_packet[56 : (56 + payload_byte_size)]
+        ref_udp_payload = None if len(_ref_udp_payload) == 0 else _ref_udp_payload
         return ProbeReply(
             receive_ts,
             ipv4_header,

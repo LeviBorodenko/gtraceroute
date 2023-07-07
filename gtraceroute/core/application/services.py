@@ -1,9 +1,9 @@
 import asyncio
 from dataclasses import dataclass, field
 
-from pingtracer.core.transport.entities import ProbeReply, ProbeRequest
-from pingtracer.core.transport.services import ICMPReplyWatcher, RequestDispatcher
-from pingtracer.core.utils import RTTMonitor
+from gtraceroute.core.transport.entities import ProbeReply, ProbeRequest
+from gtraceroute.core.transport.services import ICMPReplyWatcher, RequestDispatcher
+from gtraceroute.core.utils import RTTMonitor
 
 
 @dataclass
@@ -18,11 +18,13 @@ class RouteHop:
     hop_ipv4: str | None = None
     rtt: RTTMonitor = field(default_factory=lambda: RTTMonitor())
 
-    def __eq__(self, __value: "RouteHop") -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, RouteHop):
+            raise NotImplementedError("Can only equate to other RouteHop instances")
         return (
-            self.hop == __value.hop
-            and self.target_ipv4 == __value.target_ipv4
-            and self.rtt.exp_avg == __value.rtt.exp_avg
+            self.hop == other.hop
+            and self.target_ipv4 == other.target_ipv4
+            and self.rtt.exp_avg == other.rtt.exp_avg
         )
 
     def update_rtt_estimates(self, request: ProbeRequest, reply: ProbeReply):
