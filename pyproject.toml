@@ -8,12 +8,11 @@ version = "0.1.0"
 authors = [
     {name = "Levi Borodenko", email = "levi.borodenko@gmail.com"},
 ]
-description = """gTraceroute is a sophisticated network diagnostic tool, combining the utility
-of traditional traceroute with a user-friendly text interface similar to PingPlotter. """
+description = """gtraceroute is a sophisticated network diagnostic tool."""
 requires-python = ">=3.11"
-license = {text = "BSD-3-Clause"}
+license = {text = "MIT"}
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
     'textual==0.29'
@@ -21,7 +20,7 @@ dependencies = [
 
 
 [project.optional-dependencies]
-dev = ["textual-dev", "black", "pytest", "pytest-asyncio", "pre-commit", "mypy"]
+dev = ["textual-dev", "black", "pytest", "pytest-asyncio", "pre-commit", "mypy", "build"]
 
 [tool.ruff]
 line-length = 120

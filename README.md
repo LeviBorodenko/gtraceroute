@@ -20,19 +20,13 @@ gtraceroute is a powerful network diagnostic tool that combines the functionalit
 
 ---
 
-
 ## Installation
 
-gtraceroute requires Python 3.11 or above. Here's how you can install it:
-
-### Via PyPi
+gtraceroute requires Python 3.11 or above. Simply install it via PyPi:
 
 ```bash
-pip install <pypi details>
+pip install gtraceroute
 ```
-### From source
-
-Run `pip install .` inside the cloned repo.
 
 ---
 
