@@ -5,6 +5,8 @@
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
+![gtraceroute screenshot](banner.png)
+
 gtraceroute is a powerful network diagnostic tool that combines the functionalities of traditional traceroute and the graphical user interface (GUI) approach of PingPlotter. Implemented in Python, gtraceroute offers a terminal user interface (TUI) that provides real-time route tracing with a rich set of features including historical RTT plotting, comprehensive hop information, and an intuitive interface for revisiting previous trace targets.
 
 ---
@@ -18,17 +20,19 @@ gtraceroute is a powerful network diagnostic tool that combines the functionalit
 
 ---
 
-## Demo
-
-
 
 ## Installation
 
 gtraceroute requires Python 3.11 or above. Here's how you can install it:
 
+### Via PyPi
+
 ```bash
 pip install <pypi details>
 ```
+### From source
+
+Run `pip install .` inside the cloned repo.
 
 ---
 
