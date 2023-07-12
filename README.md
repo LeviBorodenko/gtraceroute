@@ -7,7 +7,7 @@
 
 ![gtraceroute screenshot](banner.png)
 
-gtraceroute is a powerful network diagnostic tool that combines the functionalities of traditional traceroute and the graphical user interface (GUI) approach of PingPlotter. Implemented in Python, gtraceroute offers a terminal user interface (TUI) that provides real-time route tracing with a rich set of features including historical RTT plotting, comprehensive hop information, and an intuitive interface for revisiting previous trace targets.
+gtraceroute is a powerful terminal network diagnostic tool that combines the functionalities of traditional traceroute and the graphical user interface approach of PingPlotter. Implemented in Python, gtraceroute offers a terminal user interface (TUI) that provides real-time route tracing with a rich set of features including historical RTT plotting, comprehensive hop information, and an intuitive interface for revisiting previous trace targets.
 
 ---
 
