@@ -37,6 +37,31 @@ Simply run the `gtraceroute` command after installation.
 gtraceroute
 ```
 
+## How does on trace the route of an IP packet?!
+
+### Sending UDP packets
+
+gtraceroute uses UDP (User Datagram Protocol) packets as its method of exploration. Each packet is like a curious tourist on its way to a target - complete with a backpack of random goodies (random payload). Now, the whole Internet is a big place, so we need to keep track of where our tourists are going. This is where TTL (Time To Live) comes in.
+
+### Receiving ICMP packets from intermediate routers
+
+TTL is like a tourist's travel visa - when it runs out, their journey ends. Each network node along the path decreases the TTL by 1. We start by giving our tourist a TTL of 1, which means they can only visit the first stop (network node) before their visa expires.
+
+When a tourist's visa expires (i.e., TTL hits zero), the stop they're at sends us a postcard with their picture (an ICMP packet). That's how we know how far they got! The ICMP packet contains the UDP header of the expired packet and sometimes even the payload.
+
+After each tourist's trip, we increase the TTL by 1 for the next one, allowing them to go one stop further. This is like extending the visa duration for each subsequent tourist. In practise we of course send multiple tourists at the same time.
+
+### Matching sent UDP packets to received ICMP packets
+
+You may be wondering, how do we know which tourist is which when they send back their postcards (ICMP packets)? Good question!
+
+If the postcard (ICMP packet) contains the UDP payload then we simply look up which UDP packet it belonged to.
+In some cases, the ICMP packets sent back to us might only contain the the UDP header without the payload. In such situations, we use a clever trick: we encode the TTL in the destination port contained in the UDP header!
+
+This is like writing the duration of the visa on the tourist's hat in the picture. When we receive the postcard, we just need to look at the hat to know which tourist it is!
+
+
+
 ---
 
 ## License
