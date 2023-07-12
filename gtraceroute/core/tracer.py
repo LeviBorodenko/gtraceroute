@@ -2,7 +2,7 @@ import asyncio
 from dataclasses import dataclass, field
 from gtraceroute.core.application.services import RouteHop
 from gtraceroute.core.transport.services import ICMPReplyWatcher, RequestDispatcher
-from gtraceroute.core.utils import await_or_cancel_on_event, get_ipv4
+from gtraceroute.core.utils import await_or_cancel_on_event
 
 
 @dataclass
@@ -51,21 +51,3 @@ class Tracer:
         if not return_early:
             await self.stop.wait()
         return self.stop
-
-
-async def test_route_tracer():
-    target_ipv4 = get_ipv4("facebook.com")
-    stop_event = asyncio.Event()
-
-    tracer = Tracer(stop=stop_event)
-    stop_measurement = await tracer.trace_route(target_ipv4)
-    print("****************************")
-    await asyncio.sleep(10)
-    stop_measurement.set()
-    for hop in tracer.hops:
-        print(hop)
-        print("__________________")
-
-
-def test_run():
-    asyncio.run(test_route_tracer(), debug=True)

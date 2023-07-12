@@ -44,8 +44,6 @@ class RawSocketPermissionError(Exception):
 
 class ICMPReplyWatcher:
     icmp_socket: socket.socket
-    dispatched_probe_requests: list[ProbeRequest] = []
-
     reply_buffer: Deque[ProbeReply]
 
     def __init__(self, buffer_size: int = 100) -> None:
