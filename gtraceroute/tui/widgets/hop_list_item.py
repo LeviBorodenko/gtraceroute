@@ -27,7 +27,6 @@ class HopListItem(Widget):
         )
 
     CONNECTION_TIMEOUT_S: ClassVar[float] = 1
-    MAX_RTT_MS: ClassVar[float] = 500
 
     def action_update_hop(self, new_hop: RouteHop):
         self.hop_statistic.update(HopListItem.statistic_str_from_hop(new_hop))
@@ -42,7 +41,7 @@ class HopListItem(Widget):
     @staticmethod
     def statistic_str_from_hop(hop: RouteHop) -> str:
         avg_rtt = hop.rtt.exp_avg or float("inf")
-        std_rtt = hop.rtt.exp_std or float("inf")
+        std_rtt = hop.rtt.exp_std or 0
         packet_loss = (
             100
             * hop.n_failed_measurements
