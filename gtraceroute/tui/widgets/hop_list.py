@@ -32,7 +32,7 @@ class HopList(Widget):
                 HopListItem
             )
         }
-
+        hops_count = len(hop_list_item_by_hop)
         for new_hop in new_hops:
             if new_hop.hop in hop_list_item_by_hop:
                 hop_list_item_by_hop[new_hop.hop].action_update_hop(new_hop)
@@ -40,8 +40,9 @@ class HopList(Widget):
                 await container.mount(
                     HopListItem(new_hop),
                     # append to end or after the previous hop
-                    after=min(new_hop.hop, len(hop_list_item_by_hop)) - 1,
+                    after=max(0, min(new_hop.hop - 2, hops_count - 1)),
                 )
+                hops_count += 1
 
     def compose(self) -> ComposeResult:
         yield VerticalScroll(id="hop-list")
