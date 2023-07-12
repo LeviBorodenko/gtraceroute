@@ -22,7 +22,7 @@ gtraceroute is a powerful network diagnostic tool that combines the functionalit
 
 ## Installation
 
-gtraceroute requires Python 3.11 or above. Simply install it via PyPi:
+gtraceroute requires Python 3.11 or above. Install it via `pip`:
 
 ```bash
 pip install gtraceroute
@@ -56,10 +56,9 @@ After each tourist's trip, we increase the TTL by 1 for the next one, allowing t
 You may be wondering, how do we know which tourist is which when they send back their postcards (ICMP packets)? Good question!
 
 If the postcard (ICMP packet) contains the UDP payload then we simply look up which UDP packet it belonged to.
-In some cases, the ICMP packets sent back to us might only contain the the UDP header without the payload. In such situations, we use a clever trick: we encode the TTL in the destination port contained in the UDP header!
+In some cases, the ICMP packets sent back to us might only contain the UDP header without the payload. In such situations, we use a clever trick: we encode the TTL in the destination port contained in the UDP header!
 
 This is like writing the duration of the visa on the tourist's hat in the picture. When we receive the postcard, we just need to look at the hat to know which tourist it is!
-
 
 
 ---
@@ -91,7 +90,3 @@ We would like to thank the Python community and the developers of traceroute and
 ## Disclaimer
 
 Please use gtraceroute responsibly. It's designed as a diagnostic tool and not for unauthorized network probing.
-
----
-
-Made with :heart: by the gtraceroute team.
