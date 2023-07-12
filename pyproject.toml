@@ -20,7 +20,7 @@ dependencies = [
 
 
 [project.optional-dependencies]
-dev = ["textual-dev", "black", "pytest", "pytest-asyncio", "pre-commit", "mypy", "build"]
+dev = ["textual-dev", "black", "pytest", "pytest-asyncio", "pre-commit", "mypy", "build", "twine"]
 
 [tool.ruff]
 line-length = 120
