@@ -74,7 +74,7 @@ class InvalidAddressException(Exception):
 class RTTMonitor:
     ALPHA: float = 0.125
     BETA: float = 0.25
-    buffer: deque[float] = field(default_factory=lambda: deque([0] * 50, 100))
+    buffer: deque[float] = field(default_factory=lambda: deque([0] * 25, 100))
     exp_avg: float | None = None
     exp_std: float | None = None
     no_obs: bool = True

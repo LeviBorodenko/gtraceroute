@@ -56,7 +56,7 @@ class TargetInput(Widget):
         self.post_message(TargetInput.Submitted(self.input.value, self.target_ipv4))
 
     def compose(self) -> ComposeResult:
-        yield Static("[bold][red]g[/red]traceroute[/bold] v0", id="greeter")
+        yield Static("[bold][red]g[/red]traceroute[/bold] v0.1.1", id="greeter")
         with Horizontal(id="action-container"):
             yield Label("Target:")
             yield self.input
